@@ -1,0 +1,274 @@
+
+
+#include <iostream>
+using namespace std;
+
+enum enReimbursementPeriod { three = 1, Five = 2, Seven = 3};
+
+struct stDemandCredit
+{
+    float LoanAmount = 0.0;
+    float NetSalary = 0.0;
+    enReimbursementPeriod ReimbursementPeriod;
+    float TotalPayment = 0;
+    bool OtherCredit = false ;
+    float MonthlyDeduction = 0;   
+    float MonthlyPayment = 0;
+    bool DemandResult = false;
+
+};
+
+float ReadLoanAmount()
+{
+
+    // the Amount of the loan not less than 5000 & not great than 250000
+    float Num = 0;
+    do
+    {
+        cout << " Please enter the Amount of the Credit you want :"  << endl;
+        cin >> Num;
+
+    } while (Num < 5000.000 || Num > 250000.000);
+    
+    return Num;
+}
+
+float ReadNetSalary()
+{
+    // the Salary should not under 0.500
+    float Number = 0;
+    do
+    {
+        cout << " Please enter the Net Salary :" << endl;
+        cin >> Number;
+
+    } while (Number < 0.500 );
+
+    return Number;
+}
+
+void SetScreenColor(bool Right)
+{
+    if (Right)
+        system("color 2F"); //turn screen to Green
+    else
+    {
+        system("color 4F"); //turn screen to Red
+        cout << "\a";
+    }
+}
+
+enReimbursementPeriod ReadReimboursementPeriod()
+{
+    // the period of Loan payement
+    short Number = 0;
+    do
+    {
+        cout << " Please enter the Period of Reimboursement [1] 3 Years, [2] 5 Years, [3] 7 Years:" << endl;
+        cin >> Number;
+
+    } while (Number < 1 || Number > 3);
+
+    return (enReimbursementPeriod)Number;
+}
+
+char ASKForOtherCredit()
+{
+    char otherCredit = 'Y';
+    do
+    {
+        cout << "Do You Have Other Credit ? Y/N" << endl;
+        cin >> otherCredit;
+
+    } while (otherCredit != 'Y' && otherCredit != 'N' && otherCredit != 'y' && otherCredit != 'n');
+  
+
+    return otherCredit;
+
+}
+
+bool HasOtherCredit(char OtherCredit)
+{
+    if (OtherCredit == 'Y' || OtherCredit == 'y')
+        return true;
+    else
+        return false;
+    
+}
+
+int ReimbursementPeriod(enReimbursementPeriod period)
+{
+    int Aray[3] = {3, 5, 7};
+    return Aray[period-1];
+}
+
+int GetTotalInterest(int periode)
+{
+    //interest for all period of Loan
+    switch (periode)
+    {
+    case 3:
+        return 18;
+        break;
+    case 5:
+        return 25;
+        break;
+    case 7:
+        return 28;
+        break;
+    }
+}
+
+float CalculateTotalPayment(stDemandCredit& Demand)
+{ 
+
+    // new Amount of the Loan after calculate the total interest percentge
+    int reimbursementperiod = 0 ;
+    float TotalInterestPercentage = 0;
+    float totalInterest = 0;
+
+     reimbursementperiod = ReimbursementPeriod(Demand.ReimbursementPeriod);
+
+     totalInterest = GetTotalInterest(reimbursementperiod);
+
+    TotalInterestPercentage = totalInterest / 100;
+
+    float totalPayment = Demand.LoanAmount + (Demand.LoanAmount * TotalInterestPercentage);
+    
+    Demand.TotalPayment = totalPayment;
+    
+    return  Demand.TotalPayment;
+
+}
+
+float MonthlyDeductionValue(bool OtherCredit)
+{
+    float MonDeduction = 0;
+    if (OtherCredit)
+    {        
+        cout << " Please enter Monthly Deduction :" << endl;
+        cin >> MonDeduction;
+        return MonDeduction;
+    }
+    else
+    {
+        return MonDeduction;
+    }
+    
+    
+}
+
+float GetMonthlyPayment(stDemandCredit& Demand)
+{
+      // return the amount of payment for Every Month in the reimbursement Period
+    float TotalPayment = CalculateTotalPayment(Demand);
+    int TotalMonth = (ReimbursementPeriod(Demand.ReimbursementPeriod) * 12);
+
+    float MonthPayement = (TotalPayment / TotalMonth);
+    Demand.MonthlyPayment = MonthPayement;
+   
+    return  Demand.MonthlyPayment;
+}
+
+bool SatisfiedMinimumApproval(stDemandCredit& Demand)
+{
+    // here the logic of the program(the condition of accept or refus of the demand) 
+    float SalaryAfterDeduction;
+    if (Demand.OtherCredit)
+    {
+        SalaryAfterDeduction = Demand.NetSalary - Demand.MonthlyDeduction;
+    }
+    else
+    {
+        SalaryAfterDeduction = Demand.NetSalary;
+    }
+    Demand.MonthlyPayment = GetMonthlyPayment(Demand);
+    Demand.NetSalary = SalaryAfterDeduction;
+
+    if (Demand.NetSalary < Demand.MonthlyPayment)
+    {
+        Demand.DemandResult = false;        
+    }
+    else if((Demand.NetSalary / Demand.MonthlyPayment) >= 2)
+    {
+        Demand.DemandResult = true;
+    }
+    else
+    {
+        Demand.DemandResult = false;
+    }
+        
+    return Demand.DemandResult;
+}
+
+string FinalResult(stDemandCredit& Demand)
+{
+    if (Demand.DemandResult)
+         return "Accepted";
+    else
+         return "Refused";
+    
+}
+
+void PrintCheckDemand(stDemandCredit& Demand)
+{
+    // the  Result shape of the demand
+    cout << "\n";
+    cout << "---------------------------------------------------------" << endl;
+    cout << "\t\t Result of Credit Demand Check " << endl;
+    cout << "---------------------------------------------------------" << endl;
+    cout << "\t The Loan Amount you Demand : \t" << Demand.LoanAmount << endl;
+    cout << "\t Net Salary : \t\t " << Demand.NetSalary << endl;
+    cout << "\t Loan Period : \t\t " << ReimbursementPeriod(Demand.ReimbursementPeriod) << " Years " << endl;
+    cout << "\t TotalPayment : \t\t " << CalculateTotalPayment(Demand) << endl;
+    cout << "\t Monthly Payment : \t\t " << GetMonthlyPayment(Demand)<< endl;
+    cout << "\t Accepted / Refused \t\t " << FinalResult(Demand) << endl;
+    cout << "---------------------------------------------------------" << endl;
+    SetScreenColor(Demand.DemandResult);
+
+
+}
+
+void CheckDemand()
+{
+
+    stDemandCredit NewDemand;
+    NewDemand.LoanAmount = ReadLoanAmount();
+    NewDemand.NetSalary = ReadNetSalary();
+    NewDemand.ReimbursementPeriod = ReadReimboursementPeriod();
+    NewDemand.OtherCredit = HasOtherCredit(ASKForOtherCredit());
+    NewDemand.MonthlyDeduction = MonthlyDeductionValue(NewDemand.OtherCredit);
+    NewDemand.TotalPayment = CalculateTotalPayment(NewDemand);
+    NewDemand.MonthlyPayment = GetMonthlyPayment(NewDemand);   
+    NewDemand.DemandResult = SatisfiedMinimumApproval(NewDemand);    
+    PrintCheckDemand(NewDemand);
+}
+
+void ResetScreen()
+{
+    system("cls");
+    system("color 0F");
+}
+
+void CheckDemandCredit()
+{
+    char  CheckOtherDemand = 'Y';
+    do
+    {
+
+        ResetScreen();
+        CheckDemand();
+
+        cout << endl << "Do you want to Check Other Demand? Y/N? ";
+        cin >> CheckOtherDemand;
+
+    } while (CheckOtherDemand == 'Y' || CheckOtherDemand == 'y');
+}
+
+int main()
+{
+    CheckDemandCredit();
+
+    return 0;
+}
+
